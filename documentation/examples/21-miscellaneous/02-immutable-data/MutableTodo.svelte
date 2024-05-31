@@ -13,7 +13,7 @@
 
 <!-- the text will flash red whenever
 		the `todo` object changes -->
-<button bind:this={btn}>
+<button bind:this={btn} on:click>
 	{todo.done ? '👍' : ''}
 	{todo.text}
 </button>
@@ -21,8 +21,8 @@
 <style>
 	button {
 		cursor: pointer;
-		border:none;
-		background:none;
-		font-size:14px;
+		border: none;
+		background: none;
+		font-size: 14px;
 	}
 </style>

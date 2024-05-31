@@ -1,7 +1,7 @@
 name: CI
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
 permissions:
   contents: read # to fetch code (actions/checkout)
@@ -17,19 +17,22 @@ jobs:
     strategy:
       matrix:
         include:
-          - node-version: 16
-            os: ubuntu-latest
-          - node-version: 16
+          - node-version: 18
             os: windows-latest
-          - node-version: 16
+          - node-version: 18
             os: macOS-latest
           - node-version: 18
             os: ubuntu-latest
           - node-version: 20
             os: ubuntu-latest
+          - node-version: 22
+            os: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
       - uses: pnpm/action-setup@v2.2.4
+        with:
+          version: 9
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
@@ -45,8 +48,19 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: pnpm/action-setup@v2.2.4
+        with:
+          version: 9
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
           cache: pnpm
-      - run: 'pnpm i && pnpm check && pnpm lint'
+      - name: install
+        run: pnpm install --frozen-lockfile
+      - name: type check
+        run: pnpm check
+      - name: lint
+        if: (${{ success() }} || ${{ failure() }}) # ensures this step runs even if previous steps fail (avoids multiple runs uncovering different issues at different steps)
+        run: pnpm lint
+      - name: build and check generated types
+        if: (${{ success() }} || ${{ failure() }}) # ensures this step runs even if previous steps fail
+        run: pnpm build && { [ "`git status --porcelain=v1`" == "" ] || (echo "Generated types have changed — please regenerate types locally and commit the changes after you have reviewed them"; git diff; exit 1); }
