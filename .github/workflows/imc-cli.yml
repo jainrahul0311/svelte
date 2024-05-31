@@ -1,0 +1,18 @@
+name: Run Imaging Cloud CLI
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  run-imaging-cloud-cli:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Pull docker image
+        run: docker pull castimaging/carl-java-cli:alpha
+      - name: Run IL-CLI
+        run: | 
+          cd ${{github.workspace}}
+          docker run -e IMAGING_CLOUD_API_KEY=${{secrets.IMAGING_CLOUD_API_KEY}} -v $(pwd):/home/carl/extras/source castimaging/carl-java-cli:alpha "${{github.event.repository.name}}-${{github.run_id}}-${{github.run_number}}"
